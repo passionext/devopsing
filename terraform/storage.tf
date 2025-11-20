@@ -12,6 +12,8 @@ resource "random_string" "bucket_id" {
 # CKV_GCP_62 requires this separate bucket to store logs from shared_bucket.
 # -------------------------------
 resource "google_storage_bucket" "access_log_bucket" {
+  # checkov:skip=CKV_GCP_62: This bucket is dedicated for collecting logs, so logging itself is not required
+
   name          = "my-access-logs-${random_string.bucket_id.result}"
   location      = "US"
   force_destroy = true # Use with caution in production
