@@ -19,6 +19,9 @@ resource "google_storage_bucket" "access_log_bucket" {
   # Best practice for log buckets: enforce uniform access and public access prevention
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
+  versioning {
+    enabled = true
+  }
 }
 
 # -------------------------------
