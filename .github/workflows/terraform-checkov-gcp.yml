@@ -1,65 +1,123 @@
 name: Terraform CI/CD with Checkov & GCP
 
+# -------------------------------------------------------
+# Trigger the workflow ONLY when files inside "terraform/"
+# change. This prevents unnecessary runs when unrelated
+# files are committed (README updates, app code, etc.)
+# -------------------------------------------------------
+
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "terraform/**"  # trigger only for changes inside terraform/
   pull_request:
+    paths:
+      - "terraform/**"
+
+# -------------------------------------------------------
+# JOB 1 — SECURITY SCAN WITH CHECKOV
+# This job:
+#   ✓ checks out your repo
+#   ✓ installs Checkov
+#   ✓ scans only the terraform folder
+#
+# If this job fails → Deployment is automatically blocked.
+# -------------------------------------------------------
 
 jobs:
   security_scan:
-    name: Checkov Scan
+    name: Checkov Security Scan
     runs-on: ubuntu-latest
+
     steps:
+      # Pull repo code
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Install Python runtime because Checkov is a Python package
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
+      # Install Checkov security scanner
       - name: Install Checkov
         run: pip install checkov
 
-      - name: Run Checkov scan
-        run: checkov -d .
+      # Run Checkov against the terraform directory only
+      - name: Run Checkov
+        run: checkov -d terraform/
+
+  # -------------------------------------------------------
+  # JOB 2 — TERRAFORM DEPLOYMENT TO GCP
+  # This job:
+  #   ✓ waits for the security scan to pass
+  #   ✓ authenticates to Google Cloud using Workload Identity Federation
+  #   ✓ runs terraform init, validate, plan, apply
+  #
+  # NOTE:
+  # This job runs ONLY IF:
+  #   1) Checkov passed with no failed checks
+  #   2) The change is on the main branch (for apply)
+  # -------------------------------------------------------
 
   terraform_deploy:
     name: Terraform Apply to GCP
-    needs: security_scan   # runs only if Checkov passed
+    needs: security_scan   # only run if Checkov passed
     runs-on: ubuntu-latest
     environment: production
 
+    # Needed for Google OIDC authentication
     permissions:
       contents: read
-      id-token: write  # needed for GCP Workload Identity Federation
+      id-token: write
 
     steps:
+      # Checkout repository code again (each job runs in a new VM)
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # -------------------------------
-      # Authenticate to Google Cloud
-      # -------------------------------
+      # -------------------------------------------------------
+      # Authenticate to Google Cloud via Workload Identity Federation
+      # This avoids using long-lived JSON keys (much more secure)
+      #
+      # Required GitHub Secrets:
+      #   - GCP_WORKLOAD_IDENTITY_PROVIDER
+      #   - GCP_SERVICE_ACCOUNT
+      #
+      # -------------------------------------------------------
       - name: Authenticate to GCP
-        id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
+      # Install Terraform CLI
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
+      # Initialize terraform plugins, backend, modules
       - name: Terraform Init
+        working-directory: terraform/
         run: terraform init
 
+      # Validate Terraform syntax and basic structure
       - name: Terraform Validate
+        working-directory: terraform/
         run: terraform validate
 
+      # Create the execution plan
       - name: Terraform Plan
+        working-directory: terraform/
         run: terraform plan -out=tfplan
 
+      # -------------------------------------------------------
+      # Terraform Apply:
+      #   - Only runs on the main branch
+      #   - Uses -auto-approve so no human click is required
+      # -------------------------------------------------------
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
+        working-directory: terraform/
         run: terraform apply -auto-approve tfplan
