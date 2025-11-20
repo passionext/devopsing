@@ -159,8 +159,8 @@ jobs:
       # Helps prevent unintended infra changes.
       # ---------------------------------------------     
       - name: Terraform Plan
-  working-directory: terraform/
-  run: terraform plan -out=tfplan -var="gcp_service_account_email=${{ secrets.GCP_SERVICE_ACCOUNT }}"
+        working-directory: terraform/
+        run: terraform plan -out=tfplan -var="gcp_service_account_email=${{ secrets.GCP_SERVICE_ACCOUNT }}"
 
 
       # ---------------------------------------------
@@ -171,8 +171,8 @@ jobs:
       # This prevents accidental changes during manual runs or PRs.
       # ---------------------------------------------
 
-- name: Terraform Apply
-  if: github.ref == 'refs/heads/main'
-  working-directory: terraform/
-  run: terraform apply -auto-approve tfplan
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        working-directory: terraform/
+        run: terraform apply -auto-approve tfplan
 
