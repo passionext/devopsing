@@ -41,7 +41,7 @@ resource "google_compute_instance" "host_beta" {
   network_interface {
     subnetwork = google_compute_subnetwork.subnet2.id
 
-    # No public IP (no access_config block)
+    # No public IP (no access_config block).
   }
 
   service_account {
