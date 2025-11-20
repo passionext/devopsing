@@ -8,17 +8,15 @@ resource "google_compute_network" "my_network" {
 
 # CKV2_GCP_18 FIX: Define a firewall rule for the network.
 resource "google_compute_firewall" "allow_internal_traffic" {
-  name    = "allow-internal-traffic"
-  network = google_compute_network.my_network.name
-  priority = 65534 # Lower priority than default implicit rules (65535)
+  name     = "allow-internal-traffic"
+  network  = google_compute_network.my_network.name
+  priority = 65534
 
-  # Rule to allow communication within the network (often required for GKE, etc.)
   allow {
     protocol = "all"
   }
 
-  # This targets all instances in the VPC
-  source_ranges = ["10.0.0.0/8"] 
+  source_ranges = ["10.0.0.0/8"]
 }
 
 # -------------------------------
@@ -30,9 +28,11 @@ resource "google_compute_subnetwork" "subnet1" {
   region                   = "us-central1"
   network                  = google_compute_network.my_network.id
   private_ip_google_access = true
+  enable_flow_logs         = true        # Correct attribute for VPC Flow Logs
   log_config {
-    enable        = true
-    flow_sampling = 0.5
+    aggregation_interval = "INTERVAL_5_MIN"
+    flow_sampling       = 0.5
+    metadata            = "INCLUDE_ALL_METADATA"
   }
 }
 
@@ -45,8 +45,10 @@ resource "google_compute_subnetwork" "subnet2" {
   region                   = "us-central1"
   network                  = google_compute_network.my_network.id
   private_ip_google_access = true
+  enable_flow_logs         = true
   log_config {
-    enable        = true
-    flow_sampling = 0.5
+    aggregation_interval = "INTERVAL_5_MIN"
+    flow_sampling       = 0.5
+    metadata            = "INCLUDE_ALL_METADATA"
   }
 }
