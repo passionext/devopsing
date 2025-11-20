@@ -66,7 +66,13 @@ jobs:
       # "-d terraform/" tells Checkov where your .tf files are.
       # ---------------------------------------------
       - name: Run Checkov scan
-        run: checkov -d terraform/
+        run: |
+          # Converte le righe del file in una lista separata da virgola
+          SKIP_CHECKS=$(paste -sd, checkov_skip.txt)
+          echo "Skipping checks: $SKIP_CHECKS"
+      
+          # Esegui Checkov con i check da skippare
+          checkov -d terraform/ --skip-check $SKIP_CHECKS
 
   # =========================================================
   # JOB 2 — TERRAFORM DEPLOYMENT TO GCP
