@@ -2,7 +2,7 @@
 # SERVICE ACCOUNT for both VMs
 # -------------------------------
 resource "google_service_account" "vm_sa" {
-  account_id   = "vm-service-account"
+  account_id   = "github-action-test-service-acc"
   display_name = "VM Service Account"
 }
 
