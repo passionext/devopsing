@@ -1,13 +1,4 @@
 # -------------------------------
-# Reference the existing service account
-# -------------------------------
-data "google_service_account" "vm_sa" {
-  project    = "crucial-weaver-477208-g7"
-  account_id = "github-action-test-service-acc"  # only the ID part
-}
-
-
-# -------------------------------
 # VM hostAlfa in subnet1
 # -------------------------------
 resource "google_compute_instance" "host_alfa" {
@@ -27,10 +18,10 @@ resource "google_compute_instance" "host_alfa" {
     # No public IP (no access_config block)
   }
 
- service_account {
-    email  = data.google_service_account.vm_sa.email
-    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
-  }
+  service_account {
+      email  = var.gcp_service_account_email
+      scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+    }
 }
 
 # -------------------------------
@@ -54,7 +45,7 @@ resource "google_compute_instance" "host_beta" {
   }
 
   service_account {
-      email  = data.google_service_account.vm_sa.email
+      email  = var.gcp_service_account_email
       scopes = ["https://www.googleapis.com/auth/cloud-platform"]
-  }
+    }
 }
