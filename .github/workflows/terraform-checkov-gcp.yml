@@ -68,7 +68,7 @@ jobs:
       - name: Run Checkov scan
         run: |
           # Converte le righe del file in una lista separata da virgola
-          SKIP_CHECKS=$(paste -sd, checkov_skip.txt)
+          SKIP_CHECKS=$(paste -sd, checkov/checkov_skip.txt)
           echo "Skipping checks: $SKIP_CHECKS"
       
           # Esegui Checkov con i check da skippare
