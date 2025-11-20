@@ -57,5 +57,4 @@ resource "google_compute_instance" "host_beta" {
       email  = data.google_service_account.vm_sa.email
       scopes = ["https://www.googleapis.com/auth/cloud-platform"]
   }
-  }
 }
