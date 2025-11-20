@@ -157,10 +157,11 @@ jobs:
       # Step: Terraform Plan
       # Generates an execution plan and saves it to "tfplan".
       # Helps prevent unintended infra changes.
-      # ---------------------------------------------
+      # ---------------------------------------------     
       - name: Terraform Plan
-        working-directory: terraform/
-        run: terraform plan -out=tfplan
+  working-directory: terraform/
+  run: terraform plan -out=tfplan -var="gcp_service_account_email=${{ secrets.GCP_SERVICE_ACCOUNT }}"
+
 
       # ---------------------------------------------
       # Step: Terraform Apply
@@ -169,8 +170,9 @@ jobs:
       #
       # This prevents accidental changes during manual runs or PRs.
       # ---------------------------------------------
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
-        working-directory: terraform/
-        run: terraform apply -auto-approve tfplan -var="gcp_service_account_email=${{ secrets.GCP_SERVICE_ACCOUNT }}"
+
+- name: Terraform Apply
+  if: github.ref == 'refs/heads/main'
+  working-directory: terraform/
+  run: terraform apply -auto-approve tfplan
 
