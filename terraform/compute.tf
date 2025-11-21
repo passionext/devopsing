@@ -1,8 +1,8 @@
 # -------------------------------
-# VM hostAlfa in subnet1
+# VM host-alfa in subnet1
 # -------------------------------
 resource "google_compute_instance" "host_alfa" {
-  name         = "hostAlfa"
+  name         = "host-alfa"
   machine_type = "e2-micro"
   zone         = "us-central1-a"
 
@@ -14,21 +14,19 @@ resource "google_compute_instance" "host_alfa" {
 
   network_interface {
     subnetwork = google_compute_subnetwork.subnet1.id
-
-    # No public IP (no access_config block)
   }
 
   service_account {
-      email  = var.gcp_service_account_email
-      scopes = ["https://www.googleapis.com/auth/cloud-platform"]
-    }
+    email  = var.gcp_service_account_email
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+  }
 }
 
 # -------------------------------
-# VM hostBeta in subnet2
+# VM host-beta in subnet2
 # -------------------------------
 resource "google_compute_instance" "host_beta" {
-  name         = "hostBeta"
+  name         = "host-beta"
   machine_type = "e2-micro"
   zone         = "us-central1-b"
 
@@ -40,12 +38,10 @@ resource "google_compute_instance" "host_beta" {
 
   network_interface {
     subnetwork = google_compute_subnetwork.subnet2.id
-
-    # No public IP (no access_config block).
   }
 
   service_account {
-      email  = var.gcp_service_account_email
-      scopes = ["https://www.googleapis.com/auth/cloud-platform"]
-    }
+    email  = var.gcp_service_account_email
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+  }
 }
